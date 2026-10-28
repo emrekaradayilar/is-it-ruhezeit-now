@@ -73,17 +73,16 @@ It also works by just opening the file locally in a browser.
 index.html              simple version (deploy this as the main page)
 bundesland.html         version with state picker
 previews/
-  preview-*.html        frozen copies for checking each scenario
-  preview-*.png         phone-sized screenshots, handy for sharing
+  preview-*.png         phone-sized screenshots of each scenario
 ```
 
 ## Customising
 
 All text lives in the `TEXT` object near the top of each script, for both languages. Colours are CSS variables at the top of the `<style>` block (`--bg`, `--fg`, `--rest`, `--calm`, and the `body.rest` overrides). The quiet hours themselves are in `reasonAt()` (`h >= 22 || h < 6`).
 
-## Previews and screenshots
+## Screenshots
 
-Every file in `previews/` is a copy of one of the main pages with one line added before `</head>`, which freezes time, language and (optionally) state:
+The images in `previews/` are phone-sized screenshots of the page in each scenario. To capture a specific moment yourself, add this line before `</head>` in a local copy of either page. It freezes time, language and (for `bundesland.html`) state:
 
 ```html
 <script>window.__PREVIEW__ = { iso: "2026-10-28T23:14:37+01:00", lang: "de", state: "BY" };</script>
@@ -92,8 +91,6 @@ Every file in `previews/` is a copy of one of the main pages with one line added
 - `iso`: the moment to show, with its UTC offset
 - `lang`: `"en"` or `"de"`
 - `state`: a state code such as `"BY"` (only used by `bundesland.html`)
-
-When this variable is set, the page renders once and doesn't tick, which makes it easy to screenshot any scenario.
 
 ## Limitations
 
