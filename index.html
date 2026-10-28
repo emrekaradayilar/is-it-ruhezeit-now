@@ -11,6 +11,7 @@
     --muted: #3f5a48;
     --rest: #f0453a;
     --calm: #5fbf74;
+    --limited: #f2c230;
     --d: min(130vw, 640px);
   }
   body.rest {
@@ -33,16 +34,35 @@
     transition: background .4s, color .4s;
   }
   header { font-size: clamp(1.2rem, 4vw, 1.6rem); font-weight: 600; text-align: center; }
-  #answer {
+  #state {
+    margin-top: .9rem;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--fg);
+    background: transparent;
+    border: 1.5px solid var(--muted);
+    border-radius: 999px;
+    padding: .4rem 1rem;
+    max-width: 100%;
+    cursor: pointer;
+  }
+  #state:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  #state option { color: #111; background: #fff; }
+  .answer-row {
     font-size: clamp(5.5rem, 24vw, 12rem);
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 1.05;
-    margin: 1rem 0 0;
+    margin: .6rem 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .15em;
   }
+  #sound { width: .6em; height: .6em; flex: none; }
   .time { margin-top: .6rem; font-size: 1.15rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 
-  /* The clock: a huge dial, only its top part is visible, fading out downwards */
   .stage {
     position: relative;
     width: 100vw;
@@ -63,14 +83,14 @@
     box-shadow: 0 0 0 5px var(--fg);
     will-change: transform;
   }
-  .dial::after { /* hour ticks */
+  .dial::after {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: 50%;
     background: repeating-conic-gradient(from -0.3deg, rgba(0,0,0,.35) 0 0.6deg, transparent 0.6deg 15deg);
   }
-  .pin { /* "now" marker */
+  .pin {
     position: absolute;
     left: 50%;
     top: 0;
@@ -90,11 +110,45 @@
   .detail { font-size: 1.05rem; line-height: 1.55; margin: 0 0 1.35rem; padding-left: .9rem; border-left: 3px solid var(--muted); }
   .detail b { display: block; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .25rem; }
   footer { margin-top: auto; padding-top: 1.5rem; font-size: .8rem; font-style: italic; color: var(--muted); text-align: center; max-width: 38rem; line-height: 1.5; }
+
+  .week { width: 100%; max-width: 38rem; margin-top: 1.5rem; }
+  .plan { font-size: 1.25rem; font-weight: 700; text-align: center; margin: 0 0 1rem; }
+  .weeknav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .weeknav button {
+    font: inherit; font-weight: 700; color: var(--fg); background: transparent;
+    border: 1.5px solid var(--muted); border-radius: 999px; cursor: pointer;
+  }
+  .weeknav .step { width: 2.4rem; height: 2.4rem; font-size: 1.2rem; line-height: 1; }
+  .weeknav .step:focus-visible, #today:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  .wlabel { text-align: center; line-height: 1.35; }
+  .wtitle { font-weight: 700; }
+  #today { font-size: .75rem; padding: .1rem .6rem; margin-left: .5rem; }
+  .wrange { font-size: .85rem; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1.8rem repeat(7, 1fr); gap: 2px; }
+  .grid .dh { text-align: center; font-size: .7rem; font-weight: 700; color: var(--muted); line-height: 1.25; padding-bottom: .35rem; }
+  .grid .dh span { display: block; font-size: .95rem; color: var(--fg); }
+  .grid .dh.today { color: var(--fg); }
+  .grid .dh.today span { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+  .grid .hl { font-size: .65rem; color: var(--muted); text-align: right; padding-right: .4rem; line-height: 15px; font-variant-numeric: tabular-nums; }
+  .grid .c { height: 15px; border-radius: 3px; background: var(--calm); }
+  .grid .c.r { background: var(--rest); }
+  .grid .c.y { background: var(--limited); }
+  .grid .c.now { outline: 2px solid var(--fg); outline-offset: 1px; position: relative; z-index: 1; }
+  .legend { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; justify-content: center; font-size: .8rem; color: var(--muted); margin-top: 1rem; }
+  .legend i { display: inline-block; width: .8rem; height: .8rem; border-radius: 3px; margin-right: .4rem; vertical-align: -1px; }
 </style>
 </head>
 <body>
   <header id="q"></header>
-  <div id="answer" aria-live="polite">…</div>
+  <select id="state"></select>
+  <div class="answer-row">
+    <div id="answer" aria-live="polite">…</div>
+    <svg id="sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 9.5v5h3.6l5.4 4.2V5.3L7.1 9.5z" fill="currentColor"/>
+      <g id="waves"><path d="M16 9.2a4.2 4.2 0 0 1 0 5.6"/><path d="M18.8 6.4a8.2 8.2 0 0 1 0 11.2"/></g>
+      <g id="cross"><path d="M16 9.5l5.5 5.5M21.5 9.5L16 15"/></g>
+    </svg>
+  </div>
   <div class="time" id="time"></div>
 
   <div class="stage" aria-hidden="true">
@@ -108,45 +162,93 @@
     <p class="detail" id="d2"></p>
     <p class="detail" id="d3"></p>
   </div>
+  <section class="week" aria-label="Week view">
+    <h2 class="plan" id="plan"></h2>
+    <div class="weeknav">
+      <button class="step" id="prev" type="button" aria-label="Previous week">‹</button>
+      <div class="wlabel">
+        <div><span class="wtitle" id="wtitle"></span><button id="today" type="button" hidden></button></div>
+        <div class="wrange" id="wrange"></div>
+      </div>
+      <button class="step" id="next" type="button" aria-label="Next week">›</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend" id="legend"></div>
+  </section>
   <footer id="foot"></footer>
 
 <script>
 const TEXT = {
   en: {
     q: "Is it Ruhezeit in Germany right now?",
+    pick: "Choose your state…", label: "Your state (Bundesland)",
     yes: "YES", no: "NO",
-    why: { night: "It’s night-time quiet hours (22:00–06:00).", sunday: "It’s Sunday, a day of rest.", holiday: "It’s a public holiday, a day of rest." },
-    whyNo: "No statutory quiet hours right now.",
+    why: {
+      night: () => "It’s night-time quiet hours (22:00–06:00).",
+      sunday: () => "It’s Sunday, a day of rest.",
+      holiday: s => s ? "It’s a public holiday in " + s + ", a day of rest." : "It’s a public holiday, a day of rest."
+    },
+    whyNo: s => s ? "No statutory quiet hours right now in " + s + "." : "No statutory quiet hours right now.",
     yesBreak: "<b>Breaks it</b>Drilling, hammering, sawing, vacuuming, lawn mowing, loud music or TV, parties, shouting on the balcony, slamming doors.",
     yesOk: "<b>Fine</b>Normal conversation, quiet TV or music at room volume, showering, cooking, walking around.<br>If your neighbours can clearly hear it, it’s too loud.",
     noFine: "<b>Fine</b>Normal household noise, vacuuming, moderate DIY, music at reasonable volume.",
     noLimits: "<b>Still limited</b>Lawn mowers and loud garden tools are only allowed Monday–Saturday 07:00–20:00.<br>Many house rules or leases also ask for quiet 13:00–15:00, but that’s not a federal law.",
+    plan: "Plan ahead", week: "Week", today: "Today", legendRest: "Quiet hours", legendLimited: "Still limited", legendOk: "No quiet hours",
+    reasons: { night: "Night", sunday: "Sunday", holiday: "Public holiday", midday: "Midday quiet (house rules)", garden: "No lawn mowers or loud garden tools" },
+    days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     contestedYes: "<b>Often contested</b>Children playing or a baby crying is treated far more leniently than adult noise, and neighbours are generally expected to put up with it, though not without limits.<br>Cheering at a match, singing or a party don’t get that leniency: keep them at room volume, and a one-off celebration doesn’t excuse loud noise during quiet hours.",
     contestedNo: "<b>Often contested</b>Children playing, laughing and shouting outside is legally privileged and generally has to be tolerated during the day.<br>Cheering at a match, barbecues, music and parties are fine in moderation, but loud, long or repeated noise can still lead to complaints.",
-    foot: "Not legally binding or legal advice. Times shown are Berlin time. Rules vary by state, municipality and house rules. Only nationwide public holidays are counted; regional ones (e.g. Corpus Christi, Reformation Day) are not."
+    foot: "Not legally binding or legal advice. Times shown are Berlin time. Quiet hours are assumed to be 22:00–06:00 everywhere; rules still vary by municipality and house rules. Public holidays are counted for the selected state (nationwide ones only if none is chosen), and a few apply only in parts of a state."
   },
   de: {
     q: "Ist gerade Ruhezeit in Deutschland?",
+    pick: "Bundesland wählen…", label: "Dein Bundesland",
     yes: "JA", no: "NEIN",
-    why: { night: "Es ist Nachtruhe (22:00–06:00 Uhr).", sunday: "Es ist Sonntag, ein Ruhetag.", holiday: "Es ist ein gesetzlicher Feiertag, ein Ruhetag." },
-    whyNo: "Gerade keine gesetzliche Ruhezeit.",
+    why: {
+      night: () => "Es ist Nachtruhe (22:00–06:00 Uhr).",
+      sunday: () => "Es ist Sonntag, ein Ruhetag.",
+      holiday: s => s ? "Es ist ein gesetzlicher Feiertag in " + s + ", ein Ruhetag." : "Es ist ein gesetzlicher Feiertag, ein Ruhetag."
+    },
+    whyNo: s => s ? "Gerade keine gesetzliche Ruhezeit in " + s + "." : "Gerade keine gesetzliche Ruhezeit.",
     yesBreak: "<b>Stört die Ruhe</b>Bohren, Hämmern, Sägen, Staubsaugen, Rasenmähen, laute Musik oder Fernseher, Partys, Rufen auf dem Balkon, Türenknallen.",
     yesOk: "<b>In Ordnung</b>Normale Unterhaltung, leiser Fernseher oder Musik in Zimmerlautstärke, Duschen, Kochen, Herumgehen.<br>Was die Nachbarn deutlich hören, ist zu laut.",
     noFine: "<b>In Ordnung</b>Normaler Haushaltslärm, Staubsaugen, mäßiges Heimwerken, Musik in vernünftiger Lautstärke.",
     noLimits: "<b>Trotzdem begrenzt</b>Rasenmäher und laute Gartengeräte nur Montag–Samstag 07:00–20:00 Uhr.<br>Viele Hausordnungen oder Mietverträge verlangen zudem Ruhe von 13:00–15:00 Uhr; das ist aber kein Bundesgesetz.",
+    plan: "Vorausplanen", week: "KW", today: "Heute", legendRest: "Ruhezeit", legendLimited: "Trotzdem begrenzt", legendOk: "Keine Ruhezeit",
+    reasons: { night: "Nachtruhe", sunday: "Sonntag", holiday: "Feiertag", midday: "Mittagsruhe (Hausordnung)", garden: "Keine Rasenmäher oder laute Gartengeräte" },
+    days: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
     contestedYes: "<b>Oft umstritten</b>Spielende Kinder oder ein schreiendes Baby werden deutlich nachsichtiger behandelt als Erwachsenenlärm und müssen von Nachbarn grundsätzlich hingenommen werden, allerdings nicht grenzenlos.<br>Jubeln beim Fußball, Singen oder Feiern genießen diese Nachsicht nicht: Zimmerlautstärke einhalten; auch eine einmalige Feier erlaubt keinen lauten Lärm während der Ruhezeit.",
     contestedNo: "<b>Oft umstritten</b>Spielende, lachende und rufende Kinder im Freien sind gesetzlich privilegiert und müssen tagsüber grundsätzlich hingenommen werden.<br>Jubeln beim Fußball, Grillen, Musik und Feiern sind in Maßen in Ordnung, aber laute, lange oder wiederholte Geräusche können trotzdem zu Beschwerden führen.",
-    foot: "Nicht rechtsverbindlich und keine Rechtsberatung. Angezeigt wird die Berliner Zeit. Regeln unterscheiden sich je nach Bundesland, Gemeinde und Hausordnung. Berücksichtigt werden nur bundesweite Feiertage, keine regionalen (z. B. Fronleichnam, Reformationstag)."
+    foot: "Nicht rechtsverbindlich und keine Rechtsberatung. Angezeigt wird die Berliner Zeit. Die Nachtruhe wird überall mit 22:00–06:00 Uhr angenommen; Regeln unterscheiden sich weiterhin je nach Gemeinde und Hausordnung. Feiertage werden für das gewählte Bundesland gezählt (ohne Auswahl nur bundesweite), einige gelten nur in Teilen eines Landes."
   }
 };
 
-// A preview page can freeze time and language via window.__PREVIEW__
+const STATES = {
+  BW: "Baden-Württemberg", BY: "Bayern", BE: "Berlin", BB: "Brandenburg", HB: "Bremen",
+  HH: "Hamburg", HE: "Hessen", MV: "Mecklenburg-Vorpommern", NI: "Niedersachsen",
+  NW: "Nordrhein-Westfalen", RP: "Rheinland-Pfalz", SL: "Saarland", SN: "Sachsen",
+  ST: "Sachsen-Anhalt", SH: "Schleswig-Holstein", TH: "Thüringen"
+};
+// Regional public holidays: which states observe them
+const REGIONAL = {
+  epiphany:    ["BW", "BY", "ST"],                                   // 6 Jan
+  womensDay:   ["BE", "MV"],                                         // 8 Mar
+  corpus:      ["BW", "BY", "HE", "NW", "RP", "SL"],                 // Easter + 60
+  assumption:  ["BY", "SL"],                                         // 15 Aug (BY: most municipalities)
+  childrens:   ["TH"],                                               // 20 Sep
+  reformation: ["BB", "HB", "HH", "MV", "NI", "SN", "ST", "SH", "TH"], // 31 Oct
+  allSaints:   ["BW", "BY", "NW", "RP", "SL"],                       // 1 Nov
+  repentance:  ["SN"]                                                // Wednesday before 23 Nov
+};
+
+// A preview page can freeze time, language and state via window.__PREVIEW__
 const PREVIEW = window.__PREVIEW__ || null;
 const lang = PREVIEW && PREVIEW.lang
   ? PREVIEW.lang
   : ((navigator.language || "en").toLowerCase().startsWith("de") ? "de" : "en");
 const T = TEXT[lang];
 document.documentElement.lang = lang;
+const $ = id => document.getElementById(id);
 
 // Created once. Intl handles daylight saving time for Europe/Berlin automatically.
 const fmt = new Intl.DateTimeFormat("en-GB", {
@@ -164,7 +266,6 @@ function berlinNow() {
   };
 }
 
-// Easter Sunday (Gregorian)
 function easter(y) {
   const a = y % 19, b = Math.floor(y / 100), c = y % 100;
   const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
@@ -176,32 +277,67 @@ function easter(y) {
   return { m: Math.floor((h + l - 7 * m + 114) / 31), d: ((h + l - 7 * m + 114) % 31) + 1 };
 }
 
-// Nationwide public holidays
-function isHoliday(y, m, d) {
-  const key = (mm, dd) => mm + "-" + dd;
-  const set = new Set([key(1, 1), key(5, 1), key(10, 3), key(12, 25), key(12, 26)]);
+// Public holidays for a year and state ("" = nationwide holidays only), cached
+const holidayCache = {};
+function holidays(y, st) {
+  const k = y + st;
+  if (holidayCache[k]) return holidayCache[k];
+  const set = new Set();
+  const add = (m, d) => set.add(m + "-" + d);
+  [[1, 1], [5, 1], [10, 3], [12, 25], [12, 26]].forEach(a => add(a[0], a[1]));
   const e = easter(y);
-  [-2, 1, 39, 50].forEach(o => {
-    const dt = new Date(Date.UTC(y, e.m - 1, e.d + o));
-    set.add(key(dt.getUTCMonth() + 1, dt.getUTCDate()));
-  });
-  return set.has(key(m, d));
+  const easterPlus = o => { const dt = new Date(Date.UTC(y, e.m - 1, e.d + o)); add(dt.getUTCMonth() + 1, dt.getUTCDate()); };
+  [-2, 1, 39, 50].forEach(easterPlus);            // Good Friday, Easter Monday, Ascension, Whit Monday
+  const has = key => st && REGIONAL[key].includes(st);
+  if (has("epiphany")) add(1, 6);
+  if (has("womensDay")) add(3, 8);
+  if (has("corpus")) easterPlus(60);
+  if (has("assumption")) add(8, 15);
+  if (has("childrens")) add(9, 20);
+  if (has("reformation")) add(10, 31);
+  if (has("allSaints")) add(11, 1);
+  if (has("repentance")) {                          // Wednesday before 23 Nov
+    const n22 = new Date(Date.UTC(y, 10, 22));
+    const back = (n22.getUTCDay() - 3 + 7) % 7;
+    add(11, 22 - back);
+  }
+  return (holidayCache[k] = set);
 }
 
-// Returns "night" | "sunday" | "holiday" | null for a given wall-clock hour on a given date
-function reasonAt(y, m, d, h, sunday) {
+function reasonAt(y, m, d, h, sunday, st) {
   if (h >= 22 || h < 6) return "night";
   if (sunday) return "sunday";
-  if (isHoliday(y, m, d)) return "holiday";
+  if (holidays(y, st).has(m + "-" + d)) return "holiday";
   return null;
 }
 
-const $ = id => document.getElementById(id);
+// --- state selection: URL hash (#BY) > saved choice > none ---
+const KEY = "ruhezeit-state";
+const valid = c => (c && STATES[c]) ? c : "";
+let state = "";
+if (PREVIEW) state = valid(PREVIEW.state);
+else {
+  state = valid((location.hash || "").slice(1).toUpperCase());
+  if (!state) { try { state = valid(localStorage.getItem(KEY)); } catch (e) {} }
+}
+const sel = $("state");
+sel.setAttribute("aria-label", T.label);
+const ph = document.createElement("option");
+ph.value = ""; ph.textContent = T.pick; sel.appendChild(ph);
+Object.entries(STATES).sort((a, b) => a[1].localeCompare(b[1], "de")).forEach(([c, n]) => {
+  const o = document.createElement("option"); o.value = c; o.textContent = n; sel.appendChild(o);
+});
+sel.value = state;
+sel.addEventListener("change", () => {
+  state = sel.value;
+  try { localStorage.setItem(KEY, state); } catch (e) {}
+  try { history.replaceState(null, "", state ? "#" + state : location.pathname + location.search); } catch (e) {}
+  render();
+});
+
 const dial = $("dial");
 let lastGradient = "";
 
-// 24 one-hour slices on the dial; slice h sits at h*15deg when the dial is unrotated.
-// Each slice shows the real state of the 24h window around "now" (so Saturday night -> Sunday is correct).
 function dialGradient(n, nowH) {
   const base = Date.UTC(n.y, n.m - 1, n.d);
   const stops = [];
@@ -209,24 +345,80 @@ function dialGradient(n, nowH) {
     const diff = h - nowH;
     const off = diff >= 12 ? -1 : diff < -12 ? 1 : 0;
     const dt = new Date(base + off * 864e5);
-    const rest = reasonAt(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate(), h, dt.getUTCDay() === 0) !== null;
-    stops.push(`${rest ? "var(--rest)" : "var(--calm)"} ${h * 15}deg ${(h + 1) * 15}deg`);
+    const rr = reasonAt(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate(), h, dt.getUTCDay() === 0, state);
+    const col = rr ? "var(--rest)" : limitAt(h) ? "var(--limited)" : "var(--calm)";
+    stops.push(`${col} ${h * 15}deg ${(h + 1) * 15}deg`);
   }
   return `conic-gradient(${stops.join(",")})`;
+}
+
+// Hours that are not quiet hours but still limited (see the "Still limited" note):
+// 13:00-15:00 midday quiet (house rules) and 06-07 / 20-22 when loud garden tools are off-limits
+function limitAt(h) {
+  if (h === 13 || h === 14) return "midday";
+  if (h === 6 || h === 20 || h === 21) return "garden";
+  return null;
+}
+
+// --- week view: 7 days x 24 hours, same rules as the dial ---
+let weekOffset = 0, gridKey = "";
+const dlocale = lang === "de" ? "de-DE" : "en-GB";
+const dShort = new Intl.DateTimeFormat(dlocale, { day: "numeric", month: "short", timeZone: "UTC" });
+const dLong = new Intl.DateTimeFormat(dlocale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+$("prev").addEventListener("click", () => { weekOffset--; render(); });
+$("next").addEventListener("click", () => { weekOffset++; render(); });
+$("today").addEventListener("click", () => { weekOffset = 0; render(); });
+$("today").textContent = T.today;
+$("plan").textContent = T.plan;
+
+// Rebuilt only when week, state or the current hour changes (not every second)
+function renderWeek(n) {
+  const key = weekOffset + "|" + state + "|" + n.y + "-" + n.m + "-" + n.d + "|" + n.h;
+  if (key === gridKey) return;
+  gridKey = key;
+  const DAY = 864e5, p2 = v => String(v).padStart(2, "0");
+  const today = Date.UTC(n.y, n.m - 1, n.d);
+  const start = today - ((new Date(today).getUTCDay() + 6) % 7) * DAY + weekOffset * 7 * DAY; // Monday
+  const th = new Date(start + 3 * DAY);                                                        // ISO week number
+  const wk = Math.ceil(((th - Date.UTC(th.getUTCFullYear(), 0, 1)) / DAY + 1) / 7);
+  $("wtitle").textContent = T.week + " " + wk;
+  $("wrange").textContent = dShort.format(new Date(start)) + " – " + dLong.format(new Date(start + 6 * DAY));
+  $("today").hidden = weekOffset === 0;
+  $("legend").innerHTML = '<span><i style="background:var(--rest)"></i>' + T.legendRest + '</span><span><i style="background:var(--limited)"></i>' + T.legendLimited + '</span><span><i style="background:var(--calm)"></i>' + T.legendOk + '</span>';
+
+  let html = "<div></div>";
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(start + i * DAY);
+    html += '<div class="dh' + (start + i * DAY === today ? " today" : "") + '">' + T.days[i] + "<span>" + dt.getUTCDate() + "</span></div>";
+  }
+  for (let h = 0; h < 24; h++) {
+    html += '<div class="hl">' + (h % 3 === 0 ? p2(h) : "") + "</div>";
+    for (let i = 0; i < 7; i++) {
+      const t = start + i * DAY, dt = new Date(t);
+      const r = reasonAt(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate(), h, dt.getUTCDay() === 0, state);
+      const lim = r ? null : limitAt(h);
+      html += '<div class="c' + (r ? " r" : lim ? " y" : "") + (t === today && h === n.h ? " now" : "") +
+              '" title="' + T.days[i] + " " + p2(h) + ":00 – " + (r ? T.reasons[r] : lim ? T.reasons[lim] : T.legendOk) + '"></div>';
+    }
+  }
+  $("grid").innerHTML = html;
 }
 
 function render() {
   const n = berlinNow();
   const nowH = n.h + n.min / 60 + n.sec / 3600;
-  const reason = reasonAt(n.y, n.m, n.d, n.h, n.sunday) || (isHoliday(n.y, n.m, n.d) ? "holiday" : null);
+  const reason = reasonAt(n.y, n.m, n.d, n.h, n.sunday, state);
   const rest = reason !== null;
+  const name = state ? STATES[state] : "";
 
   document.body.classList.toggle("rest", rest);
   $("q").textContent = T.q;
   $("answer").textContent = rest ? T.yes : T.no;
+  $("waves").style.display = rest ? "none" : "";   // NO  = sound on
+  $("cross").style.display = rest ? "" : "none";    // YES = muted
   const p = v => String(v).padStart(2, "0");
   $("time").textContent = p(n.h) + ":" + p(n.min) + ":" + p(n.sec);
-  $("why").textContent = rest ? T.why[reason] : T.whyNo;
+  $("why").textContent = rest ? T.why[reason](name) : T.whyNo(name);
   $("d1").innerHTML = rest ? T.yesBreak : T.noFine;
   $("d2").innerHTML = rest ? T.yesOk : T.noLimits;
   $("d3").innerHTML = rest ? T.contestedYes : T.contestedNo;
@@ -235,9 +427,9 @@ function render() {
   const g = dialGradient(n, nowH);
   if (g !== lastGradient) { dial.style.background = g; lastGradient = g; }
   dial.style.transform = "rotate(" + (-nowH * 15) + "deg)";
+  renderWeek(n);
 }
 
-// Tick once per second, aligned to the real second boundary (no drift, no skipped seconds)
 function tick() {
   render();
   setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
