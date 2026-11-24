@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#7b0c1b">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>Ruhezeit?</title>
 <style>
   :root {
@@ -404,6 +408,8 @@ function renderWeek(n) {
   $("grid").innerHTML = html;
 }
 
+const metaTheme = document.querySelector('meta[name="theme-color"]');
+
 function render() {
   const n = berlinNow();
   const nowH = n.h + n.min / 60 + n.sec / 3600;
@@ -412,6 +418,8 @@ function render() {
   const name = state ? STATES[state] : "";
 
   document.body.classList.toggle("rest", rest);
+  if (metaTheme) metaTheme.setAttribute("content", rest ? "#7b0c1b" : "#dde6dc");
+
   $("q").textContent = T.q;
   $("answer").textContent = rest ? T.yes : T.no;
   $("waves").style.display = rest ? "none" : "";   // NO  = sound on
